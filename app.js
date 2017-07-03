@@ -1,6 +1,5 @@
 var game = new Phaser.Game(
-    800,
-    600,
+    window.innerWidth, window.innerHeight,
     Phaser.AUTO,
     'game',
     {
@@ -13,7 +12,7 @@ var game = new Phaser.Game(
 
 var player;
 var weapon;
-var lengthWorld = {x: 1920, y: 1920, padding: 400}
+var lengthWorld = {x: 3920, y: 3920, padding: 400}
 
 function preload() {
     game.load.image('background','assets/debug-grid-1920x1920.png');
