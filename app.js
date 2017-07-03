@@ -56,7 +56,7 @@ function create() {
     balls.setAll('name', 'ball');
     
 
-    for (var i = 0; i < 20; i++)
+    for (var i = 0; i < 150; i++)
     {
         var ball = balls.create(bounds.randomX, bounds.randomY, 'ball');        
         ball.body.setCircle(ball.body.height);
