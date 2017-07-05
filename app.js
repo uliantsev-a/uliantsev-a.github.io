@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 function preload() {
     game.load.image('background','assets/debug-grid-1920x1920.png');
     game.load.image('player', 'assets/shmup-ship.png');
