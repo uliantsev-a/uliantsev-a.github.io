@@ -25,13 +25,21 @@ function update() {
 
     if (poly.contains(player.x, player.y))
     {
-        if (! timerBlambVulkaiser.paused) timerBlambVulkaiser.start();
+        if (! timerBlambVulkaiser.paused && player.exists ) timerBlambVulkaiser.start();
+        if ( !deathTimer.running ){
+            deathTimer.add(Phaser.Timer.SECOND, death, this);
+            deathTimer.start();
+        }
     }
     else
     {
-        if ( timerBlambVulkaiser.paused) timerBlambVulkaiser.pause();
+        if ( timerBlambVulkaiser.paused || !player.exists) timerBlambVulkaiser.pause();
         vulkaiser.visible = false;
         dangerFount.visible = false;
+        if (deathTimer.running) {
+            deathTimer.stop();
+            deathTimer.remove();
+        }
     }
 }  
 

@@ -23,6 +23,7 @@ var game = new Phaser.Game(
 
 var player;
 var lengthWorld = {x: 3920, y: 3920, padding: 400}
+var countBalls = 100;
 
 
 function render() {

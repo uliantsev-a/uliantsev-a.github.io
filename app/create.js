@@ -12,7 +12,7 @@ function create() {
     game.input.mouse.capture = true; // If true the DOM mouse events will have event.
 
     // Just to display the bounds [ru] Отображаем границу
-    var bounds = new Phaser.Rectangle(
+    bounds = new Phaser.Rectangle(
         lengthWorld.padding, 
         lengthWorld.padding, 
         game.world.width - lengthWorld.padding, 
@@ -44,18 +44,7 @@ function create() {
     balls.setAll('body.damping', 0);
     balls.setAll('name', 'ball');
     
-    // Create and placing spherical resources
-    for (var i = 0; i < 20; i++)
-    {
-        var randomBoundsX = Math.floor(Math.random() * (bounds.width  - bounds.x) + bounds.x);
-        var randomBoundsY = Math.floor(Math.random() * (bounds.height - bounds.y) + bounds.y);
-        var ball = balls.create(randomBoundsX, randomBoundsY, 'ball');        
-        ball.body.setCircle(ball.body.height);
-        ball.body.setCollisionGroup(resourcesCollisionGroup);
-        ball.body.collides(playerCollisionGroup, hitResources, this);
-        ball.scale.set(0.5);
-    }
-    //
+    createBalls(countBalls);
     
     player = game.add.sprite(game.world.centerX, game.world.centerY, 'player');
              game.physics.p2.enable(player);
@@ -97,14 +86,19 @@ function create() {
 
     game.physics.p2.setPostBroadphaseCallback(checkVeg, this);
 
+    // timer for message for warning when death zone
     timerBlambVulkaiser = game.time.create(false);
     timerBlambVulkaiser.loop(400, blambVulkaiser, this);
+    ////warning text
     dangerFount =  game.add.text(vulkaiser.x + vulkaiser.width, game.camera.height - vulkaiser.height, '- Danger ! -');
     dangerFount.visible = false;
     dangerFount.fixedToCamera = true;    
     dangerFount.fontSize = 50;
     dangerFount.fontWeight = 'bold';
     dangerFount.fill = '#f80000';
+    //  Create death player on Timer
+    deathTimer = game.time.create(false);
+    deathTimer.add(Phaser.Timer.SECOND, death, this);
 }
 
 function blambVulkaiser(){ 
@@ -112,10 +106,42 @@ function blambVulkaiser(){
     dangerFount.visible = !dangerFount.visible;
 }
 
+function createBalls(count){
+// Create and placing spherical resources
+    for (var i = 0; i < count; i++)
+    {
+        var randomBoundsX = Math.floor(Math.random() * (bounds.width  - bounds.x) + bounds.x);
+        var randomBoundsY = Math.floor(Math.random() * (bounds.height - bounds.y) + bounds.y);
+        var ball = balls.create(randomBoundsX, randomBoundsY, 'ball');        
+        ball.body.setCircle(ball.body.height);
+        ball.body.setCollisionGroup(resourcesCollisionGroup);
+        ball.body.collides(playerCollisionGroup, hitResources, this);
+        ball.scale.set(0.5);
+    }
+    //
+}
+
+function death(){
+    console.info('death');
+    player.kill();
+
+    //the "click to restart" handler
+    game.input.onTap.addOnce(restart,this);
+}
+
+function restart(){    
+    balls.removeAll();
+
+
+    player.revive();
+    player.body.x = game.world.centerX;
+    player.body.y = game.world.centerY;
+    createBalls(countBalls);
+}
+
 // Check jobs collides [ru] Рабочая проверка на столкновения
 function checkVeg(body1, body2) { 
     if (body1.sprite.key == 'ball' && body2.sprite.key  == 'bullet' || body2.sprite.key == 'ball' && body1.sprite.key  == 'bullet'){
-        console.info('sd')
         body1.sprite.kill();
         body2.sprite.kill();
     }
@@ -123,7 +149,6 @@ function checkVeg(body1, body2) {
 }
 
 function hitResources(body1, body2){
-    console.info('hitResources');
     body2.sprite.alpha = 0;
     body1.sprite.alpha = 0;
 }
