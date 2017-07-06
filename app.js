@@ -7,7 +7,8 @@ function preload() {
 }
 
 var player;
-var lengthWorld = {x: 3920, y: 3920, padding: 400}
+var countBalls = 100;
+var lengthWorld = {x: 3920, y: 3920, padding: 400};
 
 var game = new Phaser.Game(
     window.innerWidth, window.innerHeight,
@@ -21,12 +22,7 @@ var game = new Phaser.Game(
     }
 );
 
-var player;
-var lengthWorld = {x: 3920, y: 3920, padding: 400}
-var countBalls = 100;
-
-
 function render() {
-    game.debug.text( balls.countDead()   + ' Dead balls', 32, 32);
+    game.debug.text( balls.countDead()   + ' Collaps balls', 32, 32);
     game.debug.text( balls.countLiving() + ' Living balls', 32, 62);
 }

@@ -65,18 +65,8 @@ function create() {
 
     // bullets // заряды
     bullets = game.add.physicsGroup(Phaser.Physics.P2JS);
-    bullets.physicsBodyType = Phaser.Physics.P2JS;
-    bullets.enableBody = true;
-    bullets.setAll('name', 'bullet');
-    bullets.createMultiple(1, 'bullet', 0, false);
-    bullets.setAll('outOfBoundsKill', true);
-    bullets.setAll('checkWorldBounds', true);
-    bullets.setAll('body.mass', 0.1);
-    bullets.setAll('body.damping', 0);
-    bulletsTimer = game.time.create(false);
-    // bullet.body.setCollisionGroup(playerCollisionGroup);
+    bulletsSetParm();
     game.physics.p2.setCollisionGroup(bullets, playerCollisionGroup);
-    bullets.setAll('body.fixedRotation',true);
 
     //game.camera.follow(player, Phaser.Camera.FOLLOW_PLATFORMER, 0.1, 0.1);
     game.camera.follow(player);
@@ -97,14 +87,32 @@ function create() {
     dangerFount.fontSize = 50;
     dangerFount.fontWeight = 'bold';
     dangerFount.fill = '#f80000';
+    textToRestart = game.add.text(game.camera.width / 2, game.camera.height / 2, "Click the mouse button to continue.", { font: "65px Arial", fill: "#ffff00", align: "center" });
+    textToRestart.anchor.set(0.5);
+    textToRestart.inputEnabled = true;
+    textToRestart.visible = false;
+
     //  Create death player on Timer
     deathTimer = game.time.create(false);
-    // deathTimer.add((Phaser.Timer.SECOND * 30), death, this);
 }
 
 function blambVulkaiser(){ 
     vulkaiser.visible = !vulkaiser.visible;
     dangerFount.visible = !dangerFount.visible;
+}
+
+function bulletsSetParm(){
+    bullets.physicsBodyType = Phaser.Physics.P2JS;
+    bullets.createMultiple(1, 'bullet', 0, false);
+    bullets.enableBody = true;
+    bullets.setAll('name', 'bullet');    
+    bullets.setAll('outOfBoundsKill', true);
+    bullets.setAll('checkWorldBounds', true);
+    bullets.setAll('body.mass', 0.1);
+    bullets.setAll('body.damping', 0);    
+    bulletsTimer = game.time.create(false);
+    // bullet.body.setCollisionGroup(playerCollisionGroup);
+    bullets.setAll('body.fixedRotation',true);
 }
 
 function createBalls(count){
@@ -123,8 +131,9 @@ function createBalls(count){
 }
 
 function death(){
-    console.info('death');
     player.kill();
+    bullets.removeAll();
+    textToRestart.visible = true;
 
     //the "click to restart" handler
     game.input.onTap.addOnce(restart,this);
@@ -132,13 +141,15 @@ function death(){
 
 function restart(){    
     balls.removeAll();
-
+    textToRestart.visible = false;
 
     player.revive();
+    //bullets.createMultiple(1, 'bullet', 0, false);
+    bulletsSetParm();
     // player.body.x = game.world.centerX;
     // player.body.y = game.world.centerY;
-    player.body.x = lengthWorld.padding + 100, 
-    player.body.y = lengthWorld.padding + 100;
+    player.body.x = lengthWorld.padding * 1.5, 
+    player.body.y = lengthWorld.padding * 1.5;
     createBalls(countBalls);
 }
 
@@ -155,3 +166,4 @@ function hitResources(body1, body2){
     body2.sprite.alpha = 0;
     body1.sprite.alpha = 0;
 }
+    

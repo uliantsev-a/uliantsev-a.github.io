@@ -4,8 +4,6 @@ function update() {
 
     if (fireButton.isDown)
     {
-        console.info('fire!');
-
         if (bullets.countDead() > 0){
             var bullet = bullets.getFirstExists(false);
             bullet.reset(
@@ -14,20 +12,16 @@ function update() {
             );
 
             bullet.angle = player.angle + 90;
-            bullet.body.velocity.x = player.inertia.x*1000;
-            bullet.body.velocity.y = player.inertia.y*1000;
+            bullet.body.velocity.x = player.inertia.x*2000;
+            bullet.body.velocity.y = player.inertia.y*2000;
             bullet.body.setCollisionGroup(playerCollisionGroup);
             bullet.body.collides(resourcesCollisionGroup, hitResources);
             game.time.events.add(Phaser.Timer.SECOND, bulletKill, this, bullet);
-            // console.info(bullet)
         }
     }
 
     if (poly.contains(player.x, player.y))
     {
-        console.info( ['start', !timerBlambVulkaiser.paused, player.exists, timerBlambVulkaiser.running] );
-
-        console.info( ['pause',  !timerBlambVulkaiser.paused, ! player.exists, timerBlambVulkaiser.running ] );
         // Если анимация не на паузе и игрок существует стартуем анимацию опасности
         // Если анимация на паузе и игрок существует возобновляем анимацию опасности
         // Иначе игрока НЕ существует останавливаемё анимацию опасности
@@ -40,7 +34,7 @@ function update() {
         };
         // if ( !timerBlambVulkaiser.paused && !player.exists ) { } 
         if ( ! deathTimer.running && player.exists ){
-            deathTimer.add(Phaser.Timer.SECOND*5, death, this);
+            deathTimer.add(Phaser.Timer.SECOND*2.5, death, this);
             deathTimer.start();
         }
     }
@@ -68,16 +62,7 @@ function movePlayer (player)
     var dy = Math.round(game.input.mousePointer.y - (player.y - game.camera.y));
 
     playerRotation = Math.atan2 (dy, dx);
-
-    // if (dx > 15 || dx < -15 || dy > 15 || dy < -15) {player.body.rotation = playerRotation}
-    //     else {player.body.rotation = 0}
-
-    // console.info([dx, dy, playerRotation]);
-    var angle = playerRotation + (Math.PI / 2) + game.math.degToRad (-90);  
-    // player.body.rotation = playerRotation + game.math.degToRad (90);  
-    // var angle = player.body.rotation + game.math.degToRad (-180) + (Math.PI / 2);  
-
-    //player.body.rotateRight(100);
+    var angle = playerRotation + (Math.PI / 2) + game.math.degToRad (-90);
 
     if(dx > 15 || dx < -15){
         player.inertia.x = Math.cos (angle);
