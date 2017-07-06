@@ -25,15 +25,27 @@ function update() {
 
     if (poly.contains(player.x, player.y))
     {
-        if (! timerBlambVulkaiser.paused && player.exists ) timerBlambVulkaiser.start();
-        if ( !deathTimer.running ){
-            deathTimer.add(Phaser.Timer.SECOND, death, this);
+        console.info( ['start', !timerBlambVulkaiser.paused, player.exists, timerBlambVulkaiser.running] );
+
+        console.info( ['pause',  !timerBlambVulkaiser.paused, ! player.exists, timerBlambVulkaiser.running ] );
+        // Если анимация не на паузе и игрок существует стартуем анимацию опасности
+        // Если анимация на паузе и игрок существует возобновляем анимацию опасности
+        // Иначе игрока НЕ существует останавливаемё анимацию опасности
+        if ( player.exists && !timerBlambVulkaiser.paused) timerBlambVulkaiser.start() 
+        else if( player.exists && timerBlambVulkaiser.paused) timerBlambVulkaiser.resume()
+        else { 
+            timerBlambVulkaiser.pause(); 
+            vulkaiser.visible = false;
+        };
+        // if ( !timerBlambVulkaiser.paused && !player.exists ) { } 
+        if ( ! deathTimer.running && player.exists ){
+            deathTimer.add(Phaser.Timer.SECOND*5, death, this);
             deathTimer.start();
         }
     }
     else
     {
-        if ( timerBlambVulkaiser.paused || !player.exists) timerBlambVulkaiser.pause();
+        if ( timerBlambVulkaiser.paused) timerBlambVulkaiser.pause();
         vulkaiser.visible = false;
         dangerFount.visible = false;
         if (deathTimer.running) {

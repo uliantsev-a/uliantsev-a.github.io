@@ -46,7 +46,8 @@ function create() {
     
     createBalls(countBalls);
     
-    player = game.add.sprite(game.world.centerX, game.world.centerY, 'player');
+    // player = game.add.sprite(game.world.centerX, game.world.centerY, 'player');
+    player = game.add.sprite(lengthWorld.padding + 100, lengthWorld.padding + 100, 'player');
              game.physics.p2.enable(player);
     player.body.setCollisionGroup(playerCollisionGroup);
     player.body.collides(balls, hitResources,);    
@@ -98,7 +99,7 @@ function create() {
     dangerFount.fill = '#f80000';
     //  Create death player on Timer
     deathTimer = game.time.create(false);
-    deathTimer.add(Phaser.Timer.SECOND, death, this);
+    // deathTimer.add((Phaser.Timer.SECOND * 30), death, this);
 }
 
 function blambVulkaiser(){ 
@@ -134,8 +135,10 @@ function restart(){
 
 
     player.revive();
-    player.body.x = game.world.centerX;
-    player.body.y = game.world.centerY;
+    // player.body.x = game.world.centerX;
+    // player.body.y = game.world.centerY;
+    player.body.x = lengthWorld.padding + 100, 
+    player.body.y = lengthWorld.padding + 100;
     createBalls(countBalls);
 }
 
