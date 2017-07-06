@@ -36,6 +36,7 @@ function update() {
         else { 
             timerBlambVulkaiser.pause(); 
             vulkaiser.visible = false;
+            dangerFount.visible = false;
         };
         // if ( !timerBlambVulkaiser.paused && !player.exists ) { } 
         if ( ! deathTimer.running && player.exists ){
