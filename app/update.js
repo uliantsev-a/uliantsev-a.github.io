@@ -14,8 +14,9 @@ function update() {
             bullet.angle = player.angle + 90;
             bullet.body.velocity.x = player.inertia.x*2000;
             bullet.body.velocity.y = player.inertia.y*2000;
-            bullet.body.setCollisionGroup(playerCollisionGroup);
+            bullet.body.setCollisionGroup(bulletsCollisionGroup);
             bullet.body.collides(resourcesCollisionGroup, hitResources);
+            bullet.body.collides(enemiesCollisionGroup, hitShep);
             game.time.events.add(Phaser.Timer.SECOND, bulletKill, this, bullet);
         }
     }
@@ -48,6 +49,16 @@ function update() {
             deathTimer.remove();
         }
     }
+
+    for (var i = 0; i < enemies.length; i++)
+    {
+        if (enemies[i].alive)
+        {
+            //enemiesAlive++;
+            enemies[i].update();    
+        }
+    }
+
 }  
 
 function movePlayer (player) 
@@ -85,14 +96,14 @@ function movePlayer (player)
         player.body.moveUp(-1 * player.inertia.y * player.speed);
     }
 
-    if(poly.contains(player.x, player.y)){
-        console.info('constains');
-    }
+    // if(poly.contains(player.x, player.y)){
+    //     console.info('constains');
+    // }
 
 }
 
 
 function bulletKill(bullet){
-    console.info('bulletKill')
+    //console.info('bulletKill')
     bullet.kill();
 }

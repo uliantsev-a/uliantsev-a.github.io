@@ -1,13 +1,40 @@
-function create() {
-    game.world.setBounds(0, 0, lengthWorld.x, lengthWorld.y);
-    background = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'background');
+EnemyShep = function(index, game, bullets){
+    var x = lengthWorld.padding + Math.random() * (300  - 100) + 100;
+    var y = lengthWorld.padding + Math.random() * (300  - 100) + 100;
 
+    this.game = game;
+    this.bullets = bullets;
+    this.shep = game.add.sprite(x, y, 'player');
+                game.physics.p2.enable(this.shep);
+    this.shep.physicsBodyType = Phaser.Physics.P2JS;
+
+    this.shep.enableBody = true;
+
+    this.shep.body.collides(this.bullets, hitShep);    
+    // player.alpha = 0.5;    
+    this.shep.speed = 300;
+    this.shep.inertia = {
+        x: 0,
+        y: 0
+    }
+
+}
+
+function create() {
+    //  Enable P2
     game.physics.startSystem(Phaser.Physics.P2JS);
-    game.physics.p2.updateBoundsCollisionGroup();
-    //game.physics.p2.setImpactEvents(s); //  Turn on impact events for the world, without this we get no collision callbacks
+    game.physics.p2.setImpactEvents(true);
+    game.physics.p2.restitution = 0.8;    
     
     playerCollisionGroup = game.physics.p2.createCollisionGroup();
+    enemiesCollisionGroup = game.physics.p2.createCollisionGroup();
     resourcesCollisionGroup = game.physics.p2.createCollisionGroup(); 
+    bulletsCollisionGroup = game.physics.p2.createCollisionGroup(); 
+
+    game.physics.p2.updateBoundsCollisionGroup();
+
+    game.world.setBounds(0, 0, lengthWorld.x, lengthWorld.y);
+    background = game.add.tileSprite(0, 0, game.world.width, game.world.height, 'background');
 
     game.input.mouse.capture = true; // If true the DOM mouse events will have event.
 
@@ -35,24 +62,29 @@ function create() {
     //
 
     // Group free resources // Группа свободных ресурсов
-    balls = game.add.physicsGroup(Phaser.Physics.P2JS);    
-    balls.physicsBodyType = Phaser.Physics.P2JS;
+    balls = game.add.group();
+    //balls = game.add.physicsGroup(Phaser.Physics.P2JS);        
     balls.enableBody = true;
-    balls.setAll('outOfBoundsKill', true);
-    balls.setAll('checkWorldBounds', true);
-    balls.setAll('body.mass', 0.1);
-    balls.setAll('body.damping', 0);
+    balls.physicsBodyType = Phaser.Physics.P2JS;
+    // balls.setAll('outOfBoundsKill', true);
+    // balls.setAll('checkWorldBounds', true);
+    // balls.setAll('body.mass', 0.1);
+    // balls.setAll('body.damping', 0);
     balls.setAll('name', 'ball');
     
     createBalls(countBalls);
     
-    // player = game.add.sprite(game.world.centerX, game.world.centerY, 'player');
     player = game.add.sprite(lengthWorld.padding + 100, lengthWorld.padding + 100, 'player');
-             game.physics.p2.enable(player);
+
+    //player.scale.set(2);
+    player.smoothed = false;
+    game.physics.p2.enable(player, false);
+    // player.body.fixedRotation = true;
     player.body.setCollisionGroup(playerCollisionGroup);
-    player.body.collides(balls, hitResources,);    
-    // player.alpha = 0.5;    
+    player.body.collides(bulletsCollisionGroup, hitResources, this);
+
     player.speed = 300;
+    player.enableBody = true;
     player.inertia = {
         x: 0,
         y: 0
@@ -60,13 +92,20 @@ function create() {
 
     fireButton = game.input.activePointer.leftButton;
 
-    // game.camera.follow(player, Phaser.Camera.FOLLOW_PLATFORMER, 0.1, 0.1);
-    // game.camera.follow(player);
-
     // bullets // заряды
     bullets = game.add.physicsGroup(Phaser.Physics.P2JS);
     bulletsSetParm();
-    game.physics.p2.setCollisionGroup(bullets, playerCollisionGroup);
+    var eqSheep = 5;
+    enemies = []
+    for (var i=0; i < eqSheep; i++){
+         enemies.push(new EnemyShep(i, game, bullets));
+        game.physics.p2.enable(enemies[i].shep, false);
+        enemies[i].shep.enableBody = true;
+        enemies[i].shep.physicsBodyType = Phaser.Physics.P2JS;
+
+        enemies[i].shep.body.setCollisionGroup(enemiesCollisionGroup);
+        enemies[i].shep.body.collides(bulletsCollisionGroup);
+    }    
 
     //game.camera.follow(player, Phaser.Camera.FOLLOW_PLATFORMER, 0.1, 0.1);
     game.camera.follow(player);
@@ -74,8 +113,6 @@ function create() {
     //vulkaiser.x = game.camera.width - vulkaiser.width
     vulkaiser.y = game.camera.height - vulkaiser.height
     vulkaiser.fixedToCamera = true;
-
-    game.physics.p2.setPostBroadphaseCallback(checkVeg, this);
 
     // timer for message for warning when death zone
     timerBlambVulkaiser = game.time.create(false);
@@ -111,7 +148,6 @@ function bulletsSetParm(){
     bullets.setAll('body.mass', 0.1);
     bullets.setAll('body.damping', 0);    
     bulletsTimer = game.time.create(false);
-    // bullet.body.setCollisionGroup(playerCollisionGroup);
     bullets.setAll('body.fixedRotation',true);
 }
 
@@ -122,9 +158,9 @@ function createBalls(count){
         var randomBoundsX = Math.floor(Math.random() * (bounds.width  - bounds.x) + bounds.x);
         var randomBoundsY = Math.floor(Math.random() * (bounds.height - bounds.y) + bounds.y);
         var ball = balls.create(randomBoundsX, randomBoundsY, 'ball');        
-        ball.body.setCircle(ball.body.height);
+        ball.body.setRectangle(40, 40);
         ball.body.setCollisionGroup(resourcesCollisionGroup);
-        ball.body.collides(playerCollisionGroup, hitResources, this);
+        ball.body.collides(bulletsCollisionGroup);
         ball.scale.set(0.5);
     }
     //
@@ -163,7 +199,18 @@ function checkVeg(body1, body2) {
 }
 
 function hitResources(body1, body2){
-    body2.sprite.alpha = 0;
-    body1.sprite.alpha = 0;
+    body1.sprite.kill();
+    body2.sprite.kill();
+    console.info('hitResources')
+}
+
+
+function hitShep(bullet, shep){
+    console.info('hitShep');
+    bullet.sprite.kill();
+    shep.sprite.kill();
 }
     
+// EnemyShep.prototype.update = function() {
+
+// };
