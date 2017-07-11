@@ -88,27 +88,11 @@ function create() {
     squadronPlayer.reviveFirst = function(){
         this.playerCapt = this.create(lengthWorld.padding + 100, lengthWorld.padding + 100, 'player');
         //this.playerCapt.enableBody = true;
+        this.playerCapt.index = 0;
         game.camera.follow(this.playerCapt);
         this.playerCapt.body.collides(bulletsCollisionGroup, hitResources, this);        
     }
     squadronPlayer.reviveFirst();
-
-    // var player = squadronPlayer.create(lengthWorld.padding + 100, lengthWorld.padding + 100, 'player');
-        // game.camera.follow(player);
-        // player.body.setCollisionGroup(playerCollisionGroup);    
-
-        // player.body.collides(bulletsCollisionGroup, hitResources, this);
-
-    // player.smoothed = false;
-    // game.physics.p2.enable(player, false);
-    // player.body.fixedRotation = true;        
-
-    // player.speed = 300;
-    // player.enableBody = true;
-    // player.inertia = {
-    //     x: 0,
-    //     y: 0
-    // }
 
     fireButton = game.input.activePointer.leftButton;
 
@@ -158,6 +142,7 @@ function blambVulkaiser(){
 }
 
 function bulletsSetParm(){
+    console.info()
     bullets.physicsBodyType = Phaser.Physics.P2JS;
     bullets.createMultiple(1, 'bullet', 0, false);
     bullets.enableBody = true;
@@ -229,10 +214,11 @@ function hitResources(body1, body2){
         body1.hasCollided = true;
         body2.hasCollided = true;
         var playerItem = squadronPlayer.create(squadronPlayer.playerCapt.x+20, squadronPlayer.playerCapt.y+20, 'player');
+        squadronPlayer.getTop().index = squadronPlayer.length;
+        // playerItem.index = squadronPlayer.length;
         //  Attach to the first body the mouse hit
         // game.physics.p2.createSpring(squadronPlayer.playerCapt, playerItem, 5, 30, 50);
     }
-    // squadronPlayer.add();
 }
 
 

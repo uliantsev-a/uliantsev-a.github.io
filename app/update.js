@@ -8,10 +8,16 @@ function update() {
 
         if (fireButton.isDown)
         {
+            var diffBull = Math.abs(squadronPlayer.children.length - bullets.length);
+            if (diffBull > 0) {
+                bullets.createMultiple(diffBull, 'bullet', 0, false);
+                bullets.setAll('body.fixedRotation',true);
+            }
+            
             if (bullets.countDead() > 0){
                 var bullet = bullets.getFirstExists(false);
                 bullet.reset(
-                    player.x + player.inertia.x * 10 + sP, 
+                    player.x + player.inertia.x * 10 + sP,
                     player.y + player.inertia.y * 10 + sP
                 );
 
@@ -19,11 +25,14 @@ function update() {
                 bullet.body.velocity.x = player.inertia.x*2000;
                 bullet.body.velocity.y = player.inertia.y*2000;
                 bullet.body.setCollisionGroup(bulletsCollisionGroup);
-                
+
                 bullet.body.hasCollided = false;
                 bullet.body.collides(resourcesCollisionGroup, hitResources);
                 bullet.body.collides(enemiesCollisionGroup, hitShep);
+
                 game.time.events.add(Phaser.Timer.SECOND, bulletKill, this, bullet);
+                // if (squadronPlayer.children.length < bullets.length)
+                // { bullets.createMultiple(1, 'bullet', 0, false);}
             }
         }
 
@@ -91,7 +100,9 @@ function movePlayer (player)
     }
     // console.info(player.parent.inertia)
     player.inertia = player.parent.inertia;
-
+    player.inertia.x += player.inertia.x - player.parent.playerCapt.x < 3 ? (player.index / 100) : 0 //? player.inertia.x > 0 : player.index * -0.1;
+    console.info(player.index)
+    player.inertia.y += player.inertia.y - player.parent.playerCapt.y < 3 ? (player.index / 100) : 0
     player.body.rotation = player.inertia.rotation
 
     if (player.inertia.x > 0) {
