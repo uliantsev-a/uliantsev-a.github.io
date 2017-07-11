@@ -74,21 +74,41 @@ function create() {
     
     createBalls(countBalls);
     
-    player = game.add.sprite(lengthWorld.padding + 100, lengthWorld.padding + 100, 'player');
-
-    //player.scale.set(2);
-    player.smoothed = false;
-    game.physics.p2.enable(player, false);
-    // player.body.fixedRotation = true;
-    player.body.setCollisionGroup(playerCollisionGroup);
-    player.body.collides(bulletsCollisionGroup, hitResources, this);
-
-    player.speed = 300;
-    player.enableBody = true;
-    player.inertia = {
-        x: 0,
-        y: 0
+        
+    // squadronPlayer = game.add.group(null , null, 'player', Phaser.Physics.P2JS);
+    squadronPlayer = game.add.physicsGroup(Phaser.Physics.P2JS); 
+    squadronPlayer.physicsBodyType = Phaser.Physics.P2JS;
+    squadronPlayer.setAll('smoothed', false);
+    squadronPlayer.setAll('speed', 300);
+    squadronPlayer.setAll('enableBody', true);
+    // squadronPlayer.setAll('inertia', { x: 0, y: 0 });
+    game.physics.p2.setCollisionGroup(squadronPlayer, playerCollisionGroup);
+    squadronPlayer.playerCapt = {};
+    squadronPlayer.inertia = { x: 0, y: 0, rotation: 0, speed: 300 };
+    squadronPlayer.reviveFirst = function(){
+        this.playerCapt = this.create(lengthWorld.padding + 100, lengthWorld.padding + 100, 'player');
+        //this.playerCapt.enableBody = true;
+        game.camera.follow(this.playerCapt);
+        this.playerCapt.body.collides(bulletsCollisionGroup, hitResources, this);        
     }
+    squadronPlayer.reviveFirst();
+
+    // var player = squadronPlayer.create(lengthWorld.padding + 100, lengthWorld.padding + 100, 'player');
+        // game.camera.follow(player);
+        // player.body.setCollisionGroup(playerCollisionGroup);    
+
+        // player.body.collides(bulletsCollisionGroup, hitResources, this);
+
+    // player.smoothed = false;
+    // game.physics.p2.enable(player, false);
+    // player.body.fixedRotation = true;        
+
+    // player.speed = 300;
+    // player.enableBody = true;
+    // player.inertia = {
+    //     x: 0,
+    //     y: 0
+    // }
 
     fireButton = game.input.activePointer.leftButton;
 
@@ -107,8 +127,7 @@ function create() {
         enemies[i].shep.body.collides(bulletsCollisionGroup);
     }    
 
-    //game.camera.follow(player, Phaser.Camera.FOLLOW_PLATFORMER, 0.1, 0.1);
-    game.camera.follow(player);
+    //game.camera.follow(player, Phaser.Camera.FOLLOW_PLATFORMER, 0.1, 0.1);    
     vulkaiser = game.add.sprite(20, 0, 'vulkaiser');
     //vulkaiser.x = game.camera.width - vulkaiser.width
     vulkaiser.y = game.camera.height - vulkaiser.height
@@ -167,7 +186,8 @@ function createBalls(count){
 }
 
 function death(){
-    player.kill();
+    squadronPlayer.removeAll()
+    // player.kill();
     bullets.removeAll();
     textToRestart.visible = true;
 
@@ -179,13 +199,15 @@ function restart(){
     balls.removeAll();
     textToRestart.visible = false;
 
-    player.revive();
+    // player.revive();
+    squadronPlayer.removeAll();
+    squadronPlayer.reviveFirst();
     //bullets.createMultiple(1, 'bullet', 0, false);
     bulletsSetParm();
     // player.body.x = game.world.centerX;
     // player.body.y = game.world.centerY;
-    player.body.x = lengthWorld.padding * 1.5, 
-    player.body.y = lengthWorld.padding * 1.5;
+    // player.body.x = lengthWorld.padding * 1.5, 
+    // player.body.y = lengthWorld.padding * 1.5;
     createBalls(countBalls);
 }
 
@@ -199,9 +221,18 @@ function checkVeg(body1, body2) {
 }
 
 function hitResources(body1, body2){
-    body1.sprite.kill();
-    body2.sprite.kill();
-    console.info('hitResources')
+    console.info(body2)
+    if (!body2.hasCollided || !body1.hasCollided){
+        body1.sprite.kill();
+        body2.sprite.kill();
+        console.info('hitResources');        
+        body1.hasCollided = true;
+        body2.hasCollided = true;
+        var playerItem = squadronPlayer.create(squadronPlayer.playerCapt.x+20, squadronPlayer.playerCapt.y+20, 'player');
+        //  Attach to the first body the mouse hit
+        // game.physics.p2.createSpring(squadronPlayer.playerCapt, playerItem, 5, 30, 50);
+    }
+    // squadronPlayer.add();
 }
 
 
