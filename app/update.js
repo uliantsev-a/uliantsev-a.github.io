@@ -4,7 +4,7 @@ function update() {
 
         // console.info(sP)
         var player = squadronPlayer.children[sP];
-        movePlayer(player);    
+        movePlayer(player);
 
         if (fireButton.isDown)
         {
@@ -12,18 +12,20 @@ function update() {
             if (diffBull > 0) {
                 bullets.createMultiple(diffBull, 'bullet', 0, false);
                 bullets.setAll('body.fixedRotation',true);
+                // bullets.setAll('idle','false');
+                //bullets.idle = false;
             }
             
             if (bullets.countDead() > 0){
                 var bullet = bullets.getFirstExists(false);
                 bullet.reset(
-                    player.x + player.inertia.x * 10 + sP,
-                    player.y + player.inertia.y * 10 + sP
+                    player.x ,
+                    player.y 
                 );
 
                 bullet.angle = player.angle + 90;
-                bullet.body.velocity.x = player.inertia.x*2000;
-                bullet.body.velocity.y = player.inertia.y*2000;
+                bullet.body.velocity.x = -Math.cos (player.parent.inertia.rotation) * 2000;
+                bullet.body.velocity.y = -Math.sin (player.parent.inertia.rotation) * 2000;
                 bullet.body.setCollisionGroup(bulletsCollisionGroup);
 
                 bullet.body.hasCollided = false;
@@ -84,41 +86,49 @@ function movePlayer (player)
     // game.camera.x - beginer coordinates for camera in map [ru] начало координат камеры на карте мира
     // mousePointer.x - coordinates mouse [ru] координата мыши
 
-    var dx = Math.round(game.input.mousePointer.x - (player.x - game.camera.x));  
-    var dy = Math.round(game.input.mousePointer.y - (player.y - game.camera.y));    
+    var mouseX = game.input.mousePointer.x,
+        mouseY = game.input.mousePointer.y;
 
-    playerRotation = Math.atan2 (dy, dx);
-    var angle = playerRotation + (Math.PI / 2) + game.math.degToRad (-90);
+    var centerX = game.camera.width  / 2,
+        centerY = game.camera.height / 2;
 
-    if(dx > 15 || dx < -15){
-        player.parent.inertia.x = Math.cos (angle);
-        player.parent.inertia.rotation = playerRotation;
-    }
-    if (dy > 15 || dy < -15) {
-        player.parent.inertia.y = Math.sin (angle);
-        player.parent.inertia.rotation = playerRotation
-    }
-    // console.info(player.parent.inertia)
-    player.inertia = player.parent.inertia;
-    player.inertia.x += player.inertia.x - player.parent.playerCapt.x < 3 ? (player.index / 100) : 0 //? player.inertia.x > 0 : player.index * -0.1;
-    console.info(player.index)
-    player.inertia.y += player.inertia.y - player.parent.playerCapt.y < 3 ? (player.index / 100) : 0
-    player.body.rotation = player.inertia.rotation
+    var diffMoveX = centerX - mouseX,
+        diffMoveY = centerY - mouseY;
 
-    if (player.inertia.x > 0) {
-        player.body.moveLeft(-1 * player.inertia.x * player.inertia.speed);
-    } else {
-        player.body.moveRight(player.inertia.x * player.inertia.speed);
-    }
-    if (player.inertia.y > 0) {
-        player.body.moveDown(player.inertia.y * player.inertia.speed);
-    } else {
-        player.body.moveUp(-1 * player.inertia.y * player.inertia.speed);
-    }
+    // var dx = Math.round(game.input.mousePointer.x - (player.x - game.camera.x));  
+    // var dy = Math.round(game.input.mousePointer.y - (player.y - game.camera.y));  
+    var dx = diffMoveX,
+        dy = diffMoveY;
 
-    // if(poly.contains(player.x, player.y)){
-    //     console.info('constains');
+    var playerRotation = Math.atan2 (dy, dx);    
+
+    // if(dx > player.width || dx < -player.width){
+    //     player.parent.inertia.x = Math.cos (angle);
     // }
+    // if (dy > player.height || dy < -player.height) {
+    //     player.parent.inertia.y = Math.sin (angle);
+    // }
+    // player.inertia = player.parent.inertia;
+    // player.inertia.x += player.inertia.x - player.parent.playerCapt.x > 10 ? (player.index / 100) : 0 //? player.inertia.x > 0 : player.index * -0.1;
+    // // console.info(player.index)
+    // player.inertia.y += player.inertia.y - player.parent.playerCapt.y > 10 ? (player.index / 100) : 0    
+    if(Math.abs(diffMoveX) > player.width + player.width / 2)
+    {
+        player.parent.inertia.x = Math.cos(playerRotation) * player.parent.inertia.speed;
+        player.parent.inertia.rotation = playerRotation;
+    } 
+
+    if(Math.abs(diffMoveY) > player.height + player.height / 2)
+    {
+        player.parent.inertia.y = Math.sin(playerRotation) * player.parent.inertia.speed;
+        player.parent.inertia.rotation = playerRotation;
+    } 
+    // console.info([angle,Math.cos (angle), Math.sin(angle)])
+
+    player.body.rotation = player.parent.inertia.rotation + game.math.degToRad (-180);
+    player.body.moveLeft(player.parent.inertia.x);
+    player.body.moveUp(player.parent.inertia.y);
+
 
 }
 

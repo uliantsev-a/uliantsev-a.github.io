@@ -1,21 +1,40 @@
-EnemyShep = function(index, game, bullets){
+EnemyShep = function(index, game, bullets, type){
     var x = lengthWorld.padding + Math.random() * (300  - 100) + 100;
     var y = lengthWorld.padding + Math.random() * (300  - 100) + 100;
 
     this.game = game;
     this.bullets = bullets;
-    this.shep = game.add.sprite(x, y, 'player');
-                game.physics.p2.enable(this.shep);
-    this.shep.physicsBodyType = Phaser.Physics.P2JS;
 
-    this.shep.enableBody = true;
+    this.squadron = game.add.physicsGroup(Phaser.Physics.P2JS); 
+    this.squadron.physicsBodyType = Phaser.Physics.P2JS;
+    this.squadron.setAll('smoothed', false);
+    this.squadron.setAll('enableBody', true);
+    this.squadron.inertia = { 
+        x: 0, y: 0,
+        rotation: 0,
+        speed: 400
+    };
+    this.squadron.reviveFirst = function(){
+        this.playerCapt = this.create(
+            lengthWorld.padding + 100, 
+            lengthWorld.padding + 100, 
+            'player'
+        );
+        this.playerCapt.index = 0;
+        game.camera.follow(this.playerCapt);
+        this.playerCapt.body.collides(bulletsCollisionGroup, hitResources, this);        
+    } 
+    if(type == 'player'){
+        game.physics.p2.setCollisionGroup(this.squadron, playerCollisionGroup);
+    }    
 
-    this.shep.body.collides(this.bullets, hitShep);    
-    // player.alpha = 0.5;    
-    this.shep.speed = 300;
-    this.shep.inertia = {
-        x: 0,
-        y: 0
+    this.getShep = function(){
+        var randPositionShift = Math.random() * (500 - 50) + 50;
+        var shep = this.squadron.create(lengthWorld.padding + randPositionShift, lengthWorld.padding + randPositionShift, 'player');
+        shep.physicsBodyType = Phaser.Physics.P2JS;
+        hitShep.enableBody = true;
+        shep.body.collides(this.bullets, hitShep);   
+        return shep;
     }
 
 }
@@ -44,7 +63,7 @@ function create() {
         lengthWorld.padding, 
         game.world.width - lengthWorld.padding, 
         game.world.height - lengthWorld.padding
-    );       
+    );
     var graphicsBounds = game.add.graphics(bounds.x, bounds.y);
     graphicsBounds.lineStyle(4, 0xffd900, 1);
     graphicsBounds.drawRect(0, 0, bounds.width - lengthWorld.padding, bounds.height - lengthWorld.padding);
@@ -73,18 +92,18 @@ function create() {
     balls.setAll('name', 'ball');
     
     createBalls(countBalls);
-    
         
     // squadronPlayer = game.add.group(null , null, 'player', Phaser.Physics.P2JS);
     squadronPlayer = game.add.physicsGroup(Phaser.Physics.P2JS); 
     squadronPlayer.physicsBodyType = Phaser.Physics.P2JS;
     squadronPlayer.setAll('smoothed', false);
-    squadronPlayer.setAll('speed', 300);
+    // squadronPlayer.setAll('speed', 500);
+    // squadronPlayer.setAll('minSpeed', 300);
     squadronPlayer.setAll('enableBody', true);
     // squadronPlayer.setAll('inertia', { x: 0, y: 0 });
     game.physics.p2.setCollisionGroup(squadronPlayer, playerCollisionGroup);
     squadronPlayer.playerCapt = {};
-    squadronPlayer.inertia = { x: 0, y: 0, rotation: 0, speed: 300 };
+    squadronPlayer.inertia = { x: 0, y: 0, rotation: 0, speed: 400, minSpeed: 150 };
     squadronPlayer.reviveFirst = function(){
         this.playerCapt = this.create(lengthWorld.padding + 100, lengthWorld.padding + 100, 'player');
         //this.playerCapt.enableBody = true;
@@ -93,6 +112,9 @@ function create() {
         this.playerCapt.body.collides(bulletsCollisionGroup, hitResources, this);        
     }
     squadronPlayer.reviveFirst();
+    for (var i = 0; i < defaultShepCount; i++){
+        sqadronAppend();
+    }
 
     fireButton = game.input.activePointer.leftButton;
 
@@ -102,13 +124,14 @@ function create() {
     var eqSheep = 5;
     enemies = []
     for (var i=0; i < eqSheep; i++){
-         enemies.push(new EnemyShep(i, game, bullets));
-        game.physics.p2.enable(enemies[i].shep, false);
-        enemies[i].shep.enableBody = true;
-        enemies[i].shep.physicsBodyType = Phaser.Physics.P2JS;
+        enemies.push(new EnemyShep(i, game, bullets));
+        shep = enemies[i].getShep()
+        game.physics.p2.enable(shep, false);
+        shep.enableBody = true;
+        shep.physicsBodyType = Phaser.Physics.P2JS;
 
-        enemies[i].shep.body.setCollisionGroup(enemiesCollisionGroup);
-        enemies[i].shep.body.collides(bulletsCollisionGroup);
+        shep.body.setCollisionGroup(enemiesCollisionGroup);
+        shep.body.collides(bulletsCollisionGroup);
     }    
 
     //game.camera.follow(player, Phaser.Camera.FOLLOW_PLATFORMER, 0.1, 0.1);    
@@ -142,7 +165,6 @@ function blambVulkaiser(){
 }
 
 function bulletsSetParm(){
-    console.info()
     bullets.physicsBodyType = Phaser.Physics.P2JS;
     bullets.createMultiple(1, 'bullet', 0, false);
     bullets.enableBody = true;
@@ -153,6 +175,8 @@ function bulletsSetParm(){
     bullets.setAll('body.damping', 0);    
     bulletsTimer = game.time.create(false);
     bullets.setAll('body.fixedRotation',true);
+    // bullets.idle = false; // флаг холостого патрона, создавая корабль при попадании
+    // pull
 }
 
 function createBalls(count){
@@ -163,6 +187,7 @@ function createBalls(count){
         var randomBoundsY = Math.floor(Math.random() * (bounds.height - bounds.y) + bounds.y);
         var ball = balls.create(randomBoundsX, randomBoundsY, 'ball');        
         ball.body.setRectangle(40, 40);
+        ball.idle = false; // флаг холостого ресурса, создавая корабль при попадании
         ball.body.setCollisionGroup(resourcesCollisionGroup);
         ball.body.collides(bulletsCollisionGroup);
         ball.scale.set(0.5);
@@ -173,6 +198,7 @@ function createBalls(count){
 function death(){
     squadronPlayer.removeAll()
     // player.kill();
+    countScore = 0;
     bullets.removeAll();
     textToRestart.visible = true;
 
@@ -206,18 +232,63 @@ function checkVeg(body1, body2) {
 }
 
 function hitResources(body1, body2){
-    console.info(body2)
-    if (!body2.hasCollided || !body1.hasCollided){
+    console.info([body2.sprite.name, body1.sprite.name])
+    console.info([body2.sprite.key, body1.sprite.key])
+    if (!body2.hasCollided && !body1.hasCollided){
         body1.sprite.kill();
-        body2.sprite.kill();
-        console.info('hitResources');        
+        body2.sprite.kill();    
         body1.hasCollided = true;
-        body2.hasCollided = true;
-        var playerItem = squadronPlayer.create(squadronPlayer.playerCapt.x+20, squadronPlayer.playerCapt.y+20, 'player');
-        squadronPlayer.getTop().index = squadronPlayer.length;
+        body2.hasCollided = true;                
+
+        // проверка на колизию группы патронов с одним элементом ресурсов
+        // checking for collided groups bullet with one element resurce
+        if (body2.sprite.key == 'ball' && !body2.sprite.idle){
+            prisonSprite = body2.sprite;
+        } else if (body1.sprite.key == 'ball' && !body1.sprite.idle){
+            prisonSprite = body1.sprite;
+        } else {
+            prisonSprite = false;
+        }
+
+        if (prisonSprite) {
+            prisonSprite.idle = true;
+            sqadronAppend();
+            // var beforeShep = squadronPlayer.getTop();
+            // squadronPlayer.create(squadronPlayer.playerCapt.x+20, squadronPlayer.playerCapt.y+20, 'player');
+            // var newShep = squadronPlayer.getTop();     
+            // // squadronPlayer.getTop().index = squadronPlayer.length;
+            // var lastIndex = squadronPlayer.length - 1;
+            // for (var sL = 0; sL < squadronPlayer.length; sL++){
+            //     if (sL != lastIndex){
+            //         game.physics.p2.createDistanceConstraint(
+            //             squadronPlayer.children[sL], newShep, newShep.height + 5, 
+            //             [squadronPlayer.children[sL].width, squadronPlayer.children[sL].height  ],
+            //             [newShep.width, newShep.height], 0.5);        
+            //     }
+            // }
+            
+        }        
         // playerItem.index = squadronPlayer.length;
         //  Attach to the first body the mouse hit
         // game.physics.p2.createSpring(squadronPlayer.playerCapt, playerItem, 5, 30, 50);
+    }
+}
+
+function sqadronAppend(){
+
+    var beforeShep = squadronPlayer.getTop();
+        squadronPlayer.create(squadronPlayer.playerCapt.x+20, squadronPlayer.playerCapt.y+20, 'player');
+    var newShep = squadronPlayer.getTop();     
+    // squadronPlayer.getTop().index = squadronPlayer.length;
+    var lastIndex = squadronPlayer.length - 1;
+    for (var sL = 0; sL < squadronPlayer.length; sL++){
+        if (sL != lastIndex){
+            game.physics.p2.createDistanceConstraint(
+                squadronPlayer.children[sL], newShep, newShep.height + 5, 
+                [squadronPlayer.children[sL].width, squadronPlayer.children[sL].height  ],
+                [newShep.width, newShep.height], 0.5);        
+        }
+        // squadronPlayer.children[sL]
     }
 }
 
@@ -226,6 +297,7 @@ function hitShep(bullet, shep){
     console.info('hitShep');
     bullet.sprite.kill();
     shep.sprite.kill();
+    countScore++;
 }
     
 // EnemyShep.prototype.update = function() {

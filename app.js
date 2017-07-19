@@ -8,8 +8,10 @@ function preload() {
 
 var player;
 var countBalls = 100;
-var lengthWorld = {x: 3920, y: 3920, padding: 400};
-
+var controlRadiusShep = 50;
+var defaultShepCount = 2;
+var countScore = 0;
+var lengthWorld = {x: 6920, y: 6920, padding: 1000};
 
 var game = new Phaser.Game(
     window.innerWidth, window.innerHeight,
@@ -25,5 +27,6 @@ var game = new Phaser.Game(
 
 function render() {
     game.debug.text( balls.countDead()   + ' Collaps balls', 32, 32);
-    game.debug.text( balls.countLiving() + ' Living balls', 32, 62);
+    game.debug.text( balls.countLiving() + ' Living balls', 32, 64);
+    game.debug.text( countScore + ' Count Scope', 32, 96);
 }
